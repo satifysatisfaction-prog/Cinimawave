@@ -1,0 +1,872 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineWorld - Watch Movies</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #061426;
+  color: white;
+}
+
+header {
+  min-height: 65px;
+  background: #0c2340;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  color: #31aaff;
+  font-size: 23px;
+  font-weight: bold;
+}
+
+.search {
+  width: 42%;
+  max-width: 300px;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #315477;
+  background: #07182b;
+  color: white;
+  outline: none;
+}
+
+nav {
+  display: flex;
+  gap: 22px;
+  padding: 16px;
+  background: #0a1e35;
+  overflow-x: auto;
+}
+
+nav button {
+  background: none;
+  border: none;
+  color: white;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+nav button:hover {
+  color: #35aaff;
+}
+
+.hero {
+  margin: 18px;
+  min-height: 230px;
+  border-radius: 14px;
+  padding: 28px;
+  background: linear-gradient(90deg,#071426,#123c67);
+  display: flex;
+  align-items: end;
+}
+
+.hero h1 {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  color: #c2d2e3;
+  margin-bottom: 18px;
+}
+
+.primary {
+  background: #0878d1;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.section {
+  padding: 12px 18px;
+}
+
+.section h2 {
+  font-size: 21px;
+  margin-bottom: 15px;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(135px,1fr));
+  gap: 14px;
+}
+
+.movie-card {
+  cursor: pointer;
+  min-width: 0;
+}
+
+.movie-card img {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 9px;
+  background: #142d49;
+}
+
+.movie-card h3 {
+  font-size: 14px;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+}
+
+.movie-card p {
+  font-size: 12px;
+  color: #9fb3c9;
+  margin-top: 4px;
+}
+
+.movie-card:hover {
+  transform: translateY(-3px);
+}
+
+.empty {
+  color: #9fb3c9;
+  padding: 15px 0;
+}
+
+#detailsPage, #playerPage, #legalPage {
+  display: none;
+  padding: 20px;
+}
+
+.details-box {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  background: #102746;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.details-box img {
+  width: 190px;
+  max-width: 100%;
+  border-radius: 9px;
+  object-fit: cover;
+}
+
+.details-info {
+  flex: 1;
+  min-width: 180px;
+}
+
+.details-info h1 {
+  margin: 10px 0;
+}
+
+.details-info p {
+  color: #bdcde0;
+  line-height: 1.6;
+  margin: 10px 0;
+}
+
+.back {
+  margin-bottom: 15px;
+  background: #1b3958;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#videoPlayer {
+  width: 100%;
+  max-height: 75vh;
+  background: black;
+  border-radius: 10px;
+}
+
+.player-title {
+  margin: 15px 0;
+}
+
+/* LEGAL PAGES */
+
+.legal-content {
+  max-width: 900px;
+  margin: 10px auto 30px;
+  background: #102746;
+  border: 1px solid #244467;
+  border-radius: 12px;
+  padding: 25px;
+}
+
+.legal-content h1 {
+  color: #35aaff;
+  margin-bottom: 20px;
+  font-size: 27px;
+}
+
+.legal-content h2 {
+  color: #68bdff;
+  font-size: 18px;
+  margin-top: 22px;
+  margin-bottom: 9px;
+}
+
+.legal-content p {
+  color: #c3d2e2;
+  line-height: 1.8;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.legal-content a {
+  color: #54b8ff;
+  overflow-wrap: anywhere;
+}
+
+.legal-date {
+  color: #8198b1;
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+/* FOOTER */
+
+footer {
+  text-align: center;
+  padding: 30px 18px;
+  color: #8198b1;
+  margin-top: 30px;
+  background: #0a1e35;
+}
+
+.footer-logo {
+  color: #35aaff;
+  font-size: 21px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.footer-links button {
+  background: none;
+  border: none;
+  color: #c4d9ed;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.footer-links button:hover {
+  color: #35aaff;
+}
+
+@media(max-width:600px) {
+  .logo {
+    font-size: 19px;
+  }
+
+  .search {
+    width: 48%;
+  }
+
+  .hero {
+    min-height: 190px;
+    padding: 20px;
+  }
+
+  .hero h1 {
+    font-size: 24px;
+  }
+
+  .movie-grid {
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 10px;
+  }
+
+  .movie-card h3 {
+    font-size: 12px;
+  }
+
+  .details-box img {
+    width: 125px;
+  }
+
+  .legal-content {
+    padding: 17px;
+  }
+
+  .legal-content h1 {
+    font-size: 23px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">🎬 CineWorld</div>
+  <input
+    type="search"
+    class="search"
+    id="searchInput"
+    placeholder="Search movies..."
+    oninput="searchMovies()"
+  >
+</header>
+
+<nav>
+  <button onclick="showHome()">Home</button>
+  <button onclick="filterGenre('All')">All Movies</button>
+  <button onclick="filterGenre('Action')">Action</button>
+  <button onclick="filterGenre('Comedy')">Comedy</button>
+  <button onclick="filterGenre('Drama')">Drama</button>
+  <button onclick="filterGenre('Romance')">Romance</button>
+  <button onclick="filterGenre('Thriller')">Thriller</button>
+  <button onclick="showContinue()">Continue Watching</button>
+</nav>
+
+<!-- HOME PAGE -->
+
+<main id="homePage">
+
+  <section class="hero">
+    <div>
+      <h1>Welcome to CineWorld</h1>
+      <p>Discover movies and enjoy your entertainment.</p>
+      <button class="primary" onclick="showAllMovies()">
+        Explore Movies
+      </button>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 id="sectionTitle">Latest Movies</h2>
+    <div class="movie-grid" id="movieGrid">
+      <p class="empty">Loading movies...</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- MOVIE DETAILS -->
+
+<section id="detailsPage">
+  <button class="back" onclick="showHome()">← Back</button>
+
+  <div class="details-box">
+    <img id="detailPoster" src="" alt="Movie poster">
+
+    <div class="details-info">
+      <h1 id="detailTitle"></h1>
+      <p id="detailMeta"></p>
+      <p id="detailDescription"></p>
+
+      <button class="primary" onclick="playSelectedMovie()">
+        ▶ Watch Now
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO PLAYER -->
+
+<section id="playerPage">
+  <button class="back" onclick="backToDetails()">← Back</button>
+
+  <h2 class="player-title" id="playerTitle"></h2>
+
+  <video id="videoPlayer" controls playsinline preload="metadata">
+    Your browser does not support video playback.
+  </video>
+
+  <p style="color:#9fb3c9;margin-top:12px">
+    Enjoy watching on CineWorld.
+  </p>
+</section>
+
+<!-- LEGAL PAGES -->
+
+<section id="legalPage">
+
+  <button class="back" onclick="showHome()">← Back to Home</button>
+
+  <div class="legal-content">
+
+    <div id="legalText"></div>
+
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+
+  <div class="footer-logo">🎬 CineWorld</div>
+
+  <p>Your entertainment destination.</p>
+
+  <div class="footer-links">
+    <button onclick="openLegal('about')">About Us</button>
+    <button onclick="openLegal('contact')">Contact Us</button>
+    <button onclick="openLegal('privacy')">Privacy Policy</button>
+    <button onclick="openLegal('terms')">Terms & Conditions</button>
+    <button onclick="openLegal('disclaimer')">Disclaimer</button>
+  </div>
+
+  <p>© 2026 CineWorld. All rights reserved.</p>
+
+</footer>
+
+<script>
+
+// FIREBASE CONFIGURATION
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-q7IHgs1WUcGCpzBJqGtXRWlFHDnhjiM",
+  authDomain: "ciniworld-e9db8.firebaseapp.com",
+  databaseURL: "https://ciniworld-e9db8-default-rtdb.firebaseio.com",
+  projectId: "ciniworld-e9db8",
+  storageBucket: "ciniworld-e9db8.firebasestorage.app",
+  messagingSenderId: "1088989787240",
+  appId: "1:1088989787240:web:02c166c9337ccb9e6277dd"
+};
+
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+let allMovies = [];
+let selectedMovie = null;
+
+// LEGAL PAGE CONTENT
+
+const legalPages = {
+
+  about: `
+    <h1>About CineWorld</h1>
+    <div class="legal-date">About Us</div>
+
+    <p>Welcome to CineWorld.</p>
+
+    <p>CineWorld is an entertainment website designed to help visitors discover and explore movie information and other entertainment content.</p>
+
+    <h2>Our Purpose</h2>
+    <p>Our goal is to provide a simple and user-friendly entertainment browsing experience.</p>
+
+    <h2>Our Content</h2>
+    <p>Content displayed on CineWorld may include movie titles, descriptions, posters and video links. Availability depends on the content provided by the website administrators.</p>
+  `,
+
+  contact: `
+    <h1>Contact Us</h1>
+    <div class="legal-date">Get in touch</div>
+
+    <p>If you have questions, feedback or concerns about CineWorld, you can contact the website administrator.</p>
+
+    <h2>Email</h2>
+    <p>Replace this address with your official support email:</p>
+    <p><a href="mailto:YOUR_EMAIL@example.com">YOUR_EMAIL@example.com</a></p>
+
+    <h2>Copyright Concerns</h2>
+    <p>If you believe content on CineWorld infringes your copyright, contact us with the relevant details and proof of ownership so the matter can be reviewed.</p>
+  `,
+
+  privacy: `
+    <h1>Privacy Policy</h1>
+    <div class="legal-date">Privacy information</div>
+
+    <p>This Privacy Policy explains how CineWorld handles information when visitors use this website.</p>
+
+    <h2>Information We Collect</h2>
+    <p>CineWorld may process technical information such as browser details, device information and basic usage data. Firebase services may process data required to provide the website and its features.</p>
+
+    <h2>Cookies and Local Storage</h2>
+    <p>This website uses browser local storage to remember the Continue Watching list on the current device. Clearing browser data may remove this information.</p>
+
+    <h2>Third-Party Services</h2>
+    <p>CineWorld uses Firebase services to retrieve movie information. Third-party video hosts may have their own privacy policies and data practices.</p>
+
+    <h2>Data Security</h2>
+    <p>We take reasonable steps to protect information, but no internet service can guarantee absolute security.</p>
+
+    <h2>Children's Privacy</h2>
+    <p>CineWorld is not intended to collect personal information from children without appropriate permission and safeguards.</p>
+
+    <h2>Policy Updates</h2>
+    <p>This policy may be updated when website features or legal requirements change.</p>
+  `,
+
+  terms: `
+    <h1>Terms & Conditions</h1>
+    <div class="legal-date">Website usage rules</div>
+
+    <p>By using CineWorld, visitors agree to follow these Terms and Conditions.</p>
+
+    <h2>Website Use</h2>
+    <p>Visitors must use CineWorld lawfully and must not attempt to damage, disrupt or misuse the website.</p>
+
+    <h2>Content</h2>
+    <p>Movie information, images and video links may be supplied by administrators or third-party services. Availability may change without notice.</p>
+
+    <h2>Copyright</h2>
+    <p>Users must not copy, redistribute, download or publicly share copyrighted content without permission from the rights holder.</p>
+
+    <h2>Third-Party Links</h2>
+    <p>CineWorld may link to external websites. We do not control their content, availability or policies.</p>
+
+    <h2>Changes</h2>
+    <p>We may update these terms when necessary. Continued use after an update means you accept the revised terms, where permitted by applicable law.</p>
+  `,
+
+  disclaimer: `
+    <h1>Disclaimer</h1>
+    <div class="legal-date">Important information</div>
+
+    <h2>Content Ownership</h2>
+    <p>All movie titles, posters, videos, trademarks and related materials belong to their respective owners unless otherwise stated.</p>
+
+    <h2>Authorization</h2>
+    <p>CineWorld should only display or link to content that the website operator is legally authorized to distribute or make available.</p>
+
+    <h2>External Content</h2>
+    <p>CineWorld is not responsible for the content, privacy practices or availability of external websites and services.</p>
+
+    <h2>Accuracy</h2>
+    <p>Movie descriptions, release dates and other information may contain errors or become outdated.</p>
+
+    <h2>Copyright Requests</h2>
+    <p>Rights holders can contact the website administrator to report content they believe infringes their rights.</p>
+  `
+};
+
+// OPEN LEGAL PAGE
+
+function openLegal(page) {
+
+  const content = legalPages[page];
+
+  if (!content) return;
+
+  document.getElementById("homePage").style.display = "none";
+  document.getElementById("detailsPage").style.display = "none";
+  document.getElementById("playerPage").style.display = "none";
+  document.getElementById("legalPage").style.display = "block";
+
+  document.getElementById("legalText").innerHTML = content;
+
+  stopVideo();
+  window.scrollTo(0,0);
+}
+
+// LOAD MOVIES FROM FIRESTORE
+
+async function loadMovies() {
+
+  const grid = document.getElementById("movieGrid");
+
+  try {
+
+    const snapshot = await db.collection("movies").get();
+
+    allMovies = [];
+
+    snapshot.forEach(doc => {
+      allMovies.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    allMovies.sort((a,b) => {
+      const aTime = a.createdAt?.seconds || 0;
+      const bTime = b.createdAt?.seconds || 0;
+      return bTime - aTime;
+    });
+
+    renderMovies(allMovies);
+
+  } catch(error) {
+
+    grid.textContent = "Unable to load movies: " + error.message;
+
+  }
+}
+
+// DISPLAY MOVIES
+
+function renderMovies(movies) {
+
+  const grid = document.getElementById("movieGrid");
+
+  grid.innerHTML = "";
+
+  if (!movies.length) {
+    grid.innerHTML = '<p class="empty">No movies found.</p>';
+    return;
+  }
+
+  movies.forEach(movie => {
+
+    const card = document.createElement("div");
+    card.className = "movie-card";
+
+    const img = document.createElement("img");
+    img.src = movie.poster || "";
+    img.alt = movie.title || "Movie poster";
+
+    img.onerror = () => {
+      img.style.visibility = "hidden";
+    };
+
+    const title = document.createElement("h3");
+    title.textContent = movie.title || "Untitled";
+
+    const meta = document.createElement("p");
+
+    meta.textContent = [
+      movie.genre,
+      movie.year
+    ].filter(Boolean).join(" • ");
+
+    card.append(img,title,meta);
+
+    card.onclick = () => openMovie(movie.id);
+
+    grid.appendChild(card);
+
+  });
+
+}
+
+// SEARCH MOVIES
+
+function searchMovies() {
+
+  const query = document.getElementById("searchInput")
+    .value.toLowerCase().trim();
+
+  const filtered = allMovies.filter(movie =>
+
+    (movie.title || "").toLowerCase().includes(query) ||
+    (movie.genre || "").toLowerCase().includes(query) ||
+    (movie.language || "").toLowerCase().includes(query)
+
+  );
+
+  document.getElementById("sectionTitle").textContent =
+    query ? "Search Results" : "Latest Movies";
+
+  renderMovies(filtered);
+
+}
+
+// FILTER BY GENRE
+
+function filterGenre(genre) {
+
+  showHome();
+
+  document.getElementById("searchInput").value = "";
+
+  const filtered = genre === "All"
+    ? allMovies
+    : allMovies.filter(movie =>
+        (movie.genre || "").toLowerCase() === genre.toLowerCase()
+      );
+
+  document.getElementById("sectionTitle").textContent =
+    genre === "All" ? "All Movies" : genre + " Movies";
+
+  renderMovies(filtered);
+
+}
+
+function showAllMovies() {
+  filterGenre("All");
+}
+
+function showContinue() {
+
+  showHome();
+
+  const watched = JSON.parse(
+    localStorage.getItem("cineworldContinue") || "[]"
+  );
+
+  const movies = watched
+    .map(id => allMovies.find(movie => movie.id === id))
+    .filter(Boolean);
+
+  document.getElementById("sectionTitle").textContent =
+    "Continue Watching";
+
+  renderMovies(movies);
+
+}
+
+// OPEN MOVIE DETAILS
+
+function openMovie(id) {
+
+  selectedMovie = allMovies.find(movie => movie.id === id);
+
+  if (!selectedMovie) return;
+
+  document.getElementById("homePage").style.display = "none";
+  document.getElementById("detailsPage").style.display = "block";
+  document.getElementById("playerPage").style.display = "none";
+  document.getElementById("legalPage").style.display = "none";
+
+  document.getElementById("detailPoster").src =
+    selectedMovie.poster || "";
+
+  document.getElementById("detailTitle").textContent =
+    selectedMovie.title || "Untitled";
+
+  document.getElementById("detailMeta").textContent = [
+    selectedMovie.genre,
+    selectedMovie.language,
+    selectedMovie.year,
+    selectedMovie.duration
+  ].filter(Boolean).join(" • ");
+
+  document.getElementById("detailDescription").textContent =
+    selectedMovie.description || "No description available.";
+
+  window.scrollTo(0,0);
+
+}
+
+// VIDEO PLAYER
+
+function playSelectedMovie() {
+
+  if (!selectedMovie || !selectedMovie.videoUrl) {
+    alert("Video is not available.");
+    return;
+  }
+
+  document.getElementById("detailsPage").style.display = "none";
+  document.getElementById("playerPage").style.display = "block";
+
+  const player = document.getElementById("videoPlayer");
+
+  player.pause();
+  player.src = selectedMovie.videoUrl;
+
+  document.getElementById("playerTitle").textContent =
+    selectedMovie.title || "Now Playing";
+
+  saveContinue(selectedMovie.id);
+
+  player.load();
+
+  player.play().catch(() => {});
+
+  window.scrollTo(0,0);
+
+}
+
+// SAVE CONTINUE WATCHING
+
+function saveContinue(id) {
+
+  let watched = JSON.parse(
+    localStorage.getItem("cineworldContinue") || "[]"
+  );
+
+  watched = watched.filter(item => item !== id);
+
+  watched.unshift(id);
+
+  watched = watched.slice(0,20);
+
+  localStorage.setItem(
+    "cineworldContinue",
+    JSON.stringify(watched)
+  );
+
+}
+
+// STOP VIDEO
+
+function stopVideo() {
+
+  const player = document.getElementById("videoPlayer");
+
+  player.pause();
+  player.removeAttribute("src");
+  player.load();
+
+}
+
+// NAVIGATION
+
+function showHome() {
+
+  document.getElementById("homePage").style.display = "block";
+  document.getElementById("detailsPage").style.display = "none";
+  document.getElementById("playerPage").style.display = "none";
+  document.getElementById("legalPage").style.display = "none";
+
+  stopVideo();
+
+  document.getElementById("searchInput").value = "";
+
+  document.getElementById("sectionTitle").textContent = "Latest Movies";
+
+  renderMovies(allMovies);
+
+  window.scrollTo(0,0);
+
+}
+
+function backToDetails() {
+
+  stopVideo();
+
+  document.getElementById("playerPage").style.display = "none";
+  document.getElementById("detailsPage").style.display = "block";
+
+  window.scrollTo(0,0);
+
+}
+
+// START APP
+
+loadMovies();
+
+</script>
+
+</body>
+</html>
